@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 # %%
 # Set device
-device = "mps" #torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # EXPERIMENT 1:
 EMB_DIM = 128
 N_LAYERS = 1
@@ -125,6 +125,7 @@ We will start by implementing Multi-Head Attention, which concatenates multiple 
 
 In order to have trainable parameters, we can conveniently build all modules using torch's `nn.Module` functionality.
 
+
 * Our module's `__init__()` method takes in the embedding dimension `emb_dim` of our transformer, as well as the number of heads `num_heads`.
     * It stores the `head_dim = emb_dim // num_heads`
 * We create 4 linear layers
@@ -205,6 +206,8 @@ class MultiHeadAttention(nn.Module):
         #print(output.shape)
 
         return Q, K, V, output
+
+# %%
 
 # %%
 ## Task 1.2: Transformer Blocks
