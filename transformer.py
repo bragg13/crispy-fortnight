@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 # %%
 # Set device
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = "mps" #torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # EXPERIMENT 1:
 EMB_DIM = 128
 N_LAYERS = 1
