@@ -36,81 +36,81 @@ MAX_LEN = 128 # ????
 # Optimizer: AdamW
 mask=None
 
-# %%
-# Task 0: DataLoader and Preprocessing
-class TasksData(Dataset):
-    def __init__(self, data_dir, file, transform=None):
-        self.data_dir = data_dir
-        self.file = file
-        text_file = os.path.join(data_dir, file)
+# # %%
+# # Task 0: DataLoader and Preprocessing
+# class TasksData(Dataset):
+#     def __init__(self, data_dir, file, transform=None):
+#         self.data_dir = data_dir
+#         self.file = file
+#         text_file = os.path.join(data_dir, file)
 
-        data_dict = {"src": [], "tgt": []}
+#         data_dict = {"src": [], "tgt": []}
 
-        with open(text_file, 'r') as f:
-            lines = f.readlines()
-            for line in lines:
-                src = line.split('OUT:')[0]
-                src = src.split('IN:')[1].strip()
-                tgt = line.split('OUT:')[1].strip()
+#         with open(text_file, 'r') as f:
+#             lines = f.readlines()
+#             for line in lines:
+#                 src = line.split('OUT:')[0]
+#                 src = src.split('IN:')[1].strip()
+#                 tgt = line.split('OUT:')[1].strip()
 
-                data_dict['src'].append(src)
-                data_dict['tgt'].append(tgt)
+#                 data_dict['src'].append(src)
+#                 data_dict['tgt'].append(tgt)
 
-        self.data = pd.DataFrame(data_dict)
+#         self.data = pd.DataFrame(data_dict)
 
 
-    def __len__(self):
-        return len(self.data)
+#     def __len__(self):
+#         return len(self.data)
 
-    def __getitem__(self, idx):
-        src = self.data['src'].iloc[idx] + '<EOS>'
-        tgt = self.data['tgt'].iloc[idx] + '<EOS>'
-        return src, tgt
+#     def __getitem__(self, idx):
+#         src = self.data['src'].iloc[idx] + '<EOS>'
+#         tgt = self.data['tgt'].iloc[idx] + '<EOS>'
+#         return src, tgt
 
-def create_vocab(dataset):
-    vocab = set()
+# def create_vocab(dataset):
+#     vocab = set()
 
-    for sample in dataset:
-        vocab.update(sample.split())
-    return vocab
+#     for sample in dataset:
+#         vocab.update(sample.split())
+#     return vocab
 
-# %%
-# creating datasets
-train_data = TasksData(data_dir='./data', file='tasks_train_simple.txt')
-test_data = TasksData(data_dir='./data', file='tasks_test_simple.txt')
+# # %%
+# # creating datasets
+# train_data = TasksData(data_dir='./data', file='tasks_train_simple.txt')
+# test_data = TasksData(data_dir='./data', file='tasks_test_simple.txt')
 
-#creating source and target vocab
-src_train_data = [src for src, tgt in train_data]
-vocab_train_src = create_vocab(src_train_data)
+# #creating source and target vocab
+# src_train_data = [src for src, tgt in train_data]
+# vocab_train_src = create_vocab(src_train_data)
 
-tgt_train_data = [tgt for src, tgt in train_data]
-vocab_train_tgt = create_vocab(tgt_train_data)
+# tgt_train_data = [tgt for src, tgt in train_data]
+# vocab_train_tgt = create_vocab(tgt_train_data)
 
-# we need to do word2idx to map the words to indexes. Bc the input for nn.Embedding has to be numbers
-# since nn.Embdding has different weights in input andoutput embedding the same index will not be encoded to the same vector
-word2idx_src = {w: idx + 1 for (idx, w) in enumerate(vocab_train_src)}
-word2idx_src['<PAD>'] = 0
+# # we need to do word2idx to map the words to indexes. Bc the input for nn.Embedding has to be numbers
+# # since nn.Embdding has different weights in input andoutput embedding the same index will not be encoded to the same vector
+# word2idx_src = {w: idx + 1 for (idx, w) in enumerate(vocab_train_src)}
+# word2idx_src['<PAD>'] = 0
 
-word2idx_tgt= {w: idx + 1 for (idx, w) in enumerate(vocab_train_tgt)}
-word2idx_tgt['<PAD>'] = 0
+# word2idx_tgt= {w: idx + 1 for (idx, w) in enumerate(vocab_train_tgt)}
+# word2idx_tgt['<PAD>'] = 0
 
-# We need Vocabulary size without padding
-# word2idx
-# padding
-#vocabulary and word2idx
+# # We need Vocabulary size without padding
+# # word2idx
+# # padding
+# #vocabulary and word2idx
 
-def custom_collate_fn(batch):
-    #input: batch of sentences
-    # tokenize, word2idx, pad
-    padded_src = pad_sequence([torch.tensor([word2idx_src[w] for w in src.split()]) for src, tgt in batch], batch_first=True, padding_value=0).to(device)
-    padded_tgt = pad_sequence([torch.tensor([word2idx_tgt[w] for w in tgt.split()]) for src, tgt in batch], batch_first=True, padding_value=0).to(device)
+# def custom_collate_fn(batch):
+#     #input: batch of sentences
+#     # tokenize, word2idx, pad
+#     padded_src = pad_sequence([torch.tensor([word2idx_src[w] for w in src.split()]) for src, tgt in batch], batch_first=True, padding_value=0).to(device)
+#     padded_tgt = pad_sequence([torch.tensor([word2idx_tgt[w] for w in tgt.split()]) for src, tgt in batch], batch_first=True, padding_value=0).to(device)
 
-    return padded_src, padded_tgt
+#     return padded_src, padded_tgt
 
-# %%
-# create dataloaders
-train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True, collate_fn=custom_collate_fn)
-test_loader = DataLoader(test_data, batch_size=BATCH_SIZE, shuffle=False, collate_fn=custom_collate_fn)
+# # %%
+# # create dataloaders
+# train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True, collate_fn=custom_collate_fn)
+# test_loader = DataLoader(test_data, batch_size=BATCH_SIZE, shuffle=False, collate_fn=custom_collate_fn)
 # next(iter(train_loader))
 
 
@@ -264,7 +264,7 @@ class TransformerBlock(nn.Module):
         checkpoint_1 = self.norm1(pre_norm_1)
 
         out_2 = self.ffnn(checkpoint_1)
-        pre_norm_2 = checkpoint_1 + out_2
+        pre_norm_2 = self.dropout(checkpoint_1 + out_2)
         block_out = self.norm2(pre_norm_2)
 
         ##print(f"transformer block out {block_out.shape}")
@@ -560,14 +560,42 @@ class Transformer(nn.Module):
     def forward(self, src, tgt):
         src_mask = self.create_src_mask(src)
         tgt_mask = self.create_tgt_mask(tgt)
-        #print('masks ok')
 
         encoder_out = self.encoder(src, src_mask).to(device)
-        # print('encoder ok')
         decoder_out = self.decoder(tgt, encoder_out, src_mask, tgt_mask)
-        #print('decoder ok')
 
         return decoder_out
+
+    def generate(self, src, max_length=50, eos_idx=None):
+        self.eval()  # Set to evaluation mode
+        with torch.no_grad():
+            # Create source mask
+            src_mask = self.create_src_mask(src)
+            
+            # Get encoder output once
+            encoder_output = self.encoder(src, src_mask)
+            
+            # Start with batch_size x 1 tensor of start token
+            tgt = torch.ones(src.shape[0], 1).fill_(self.tgt_pad_idx).type_as(src)
+            
+            for i in range(max_length-1):
+                # Create target mask
+                tgt_mask = self.create_tgt_mask(tgt)
+                
+                # Get decoder output
+                output = self.decoder(tgt, encoder_output, src_mask, tgt_mask)
+                
+                # Get next token prediction
+                next_token = output[:, -1].argmax(dim=-1).unsqueeze(1)
+                
+                # Add predicted token to sequence
+                tgt = torch.cat([tgt, next_token], dim=1)
+                
+                # Stop if all sequences have generated EOS token
+                if eos_idx is not None and (next_token == eos_idx).all():
+                    break
+                    
+        return tgt
 
 
 # ---
@@ -576,50 +604,50 @@ class Transformer(nn.Module):
 
 # %%
 # Initialize the model, optimizer, and loss function
-model = Transformer(
-    src_vocab_size=len(word2idx_src),
-    tgt_vocab_size=len(word2idx_tgt),
-    src_pad_idx=word2idx_src['<PAD>'],
-    tgt_pad_idx=word2idx_tgt['<PAD>'],
-    emb_dim=EMB_DIM,
-    num_layers=N_LAYERS,
-    num_heads=N_HEADS,
-    forward_dim=FORWARD_DIM,
-    dropout=DROPOUT,
-    max_len=MAX_LEN,
-).to(device)
+# model = Transformer(
+#     src_vocab_size=len(word2idx_src),
+#     tgt_vocab_size=len(word2idx_tgt),
+#     src_pad_idx=word2idx_src['<PAD>'],
+#     tgt_pad_idx=word2idx_tgt['<PAD>'],
+#     emb_dim=EMB_DIM,
+#     num_layers=N_LAYERS,
+#     num_heads=N_HEADS,
+#     forward_dim=FORWARD_DIM,
+#     dropout=DROPOUT,
+#     max_len=MAX_LEN,
+# ).to(device)
 
-optimizer = optim.AdamW(model.parameters(), lr=LEARNING_RATE)
-criterion = nn.CrossEntropyLoss(ignore_index=word2idx_tgt['<PAD>'])
+# optimizer = optim.AdamW(model.parameters(), lr=LEARNING_RATE)
+# criterion = nn.CrossEntropyLoss(ignore_index=word2idx_tgt['<PAD>'])
 
-# Training loop
-num_epochs = 50
-for epoch in range(num_epochs):
-    model.train()
-    epoch_loss = 0
+# # Training loop
+# num_epochs = 50
+# for epoch in range(num_epochs):
+#     model.train()
+#     epoch_loss = 0
 
-    for step, (src, tgt) in (pbar := tqdm(enumerate(train_loader), total=len(train_loader))):
-        src, tgt = src.to(device), tgt.to(device)
+#     for step, (src, tgt) in (pbar := tqdm(enumerate(train_loader), total=len(train_loader))):
+#         src, tgt = src.to(device), tgt.to(device)
 
-        optimizer.zero_grad()
+#         optimizer.zero_grad()
 
-        output = model(src, tgt[:, :-1])
-        output_dim = output.shape[-1]
+#         output = model(src, tgt[:, :-1])
+#         output_dim = output.shape[-1]
 
-        output = output.contiguous().view(-1, output_dim)
-        tgt = tgt[:, 1:].contiguous().view(-1)
+#         output = output.contiguous().view(-1, output_dim)
+#         tgt = tgt[:, 1:].contiguous().view(-1)
 
-        loss = criterion(output, tgt)
-        loss.backward()
+#         loss = criterion(output, tgt)
+#         loss.backward()
 
-        # Gradient clipping
-        torch.nn.utils.clip_grad_norm_(model.parameters(), GRAD_CLIP)
-        pbar.set_description(f'Epoch [{epoch+1}/{num_epochs}], Loss: {loss:.4f}')
+#         # Gradient clipping
+#         torch.nn.utils.clip_grad_norm_(model.parameters(), GRAD_CLIP)
+#         pbar.set_description(f'Epoch [{epoch+1}/{num_epochs}], Loss: {loss:.4f}')
 
-        optimizer.step()
-        epoch_loss += loss.item()
-    avg_epoch_loss = epoch_loss / len(train_loader)
-    # print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {avg_epoch_loss:.4f}')
+#         optimizer.step()
+#         epoch_loss += loss.item()
+#     avg_epoch_loss = epoch_loss / len(train_loader)
+#     # print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {avg_epoch_loss:.4f}')
 
 # %%
 
