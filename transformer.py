@@ -23,6 +23,16 @@ LEARNING_RATE = 7e-4
 BATCH_SIZE = 64
 GRAD_CLIP = 1
 MAX_LEN = 128 # ????
+# EMB_DIM = 128
+# N_LAYERS = 2
+# N_HEADS = 8
+# FORWARD_DIM = 256
+# DROPOUT = 0.15
+# LEARNING_RATE = 2e-4
+# GRAD_CLIP = 1
+# BATCH_SIZE = 16
+# MAX_LEN = 128
+
 # Optimizer: AdamW
 mask=None
 
@@ -53,8 +63,8 @@ class TasksData(Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-        src = self.data['src'].iloc[idx]
-        tgt = self.data['tgt'].iloc[idx]
+        src = self.data['src'].iloc[idx] + '<EOS>'
+        tgt = self.data['tgt'].iloc[idx] + '<EOS>'
         return src, tgt
 
 def create_vocab(dataset):
@@ -66,8 +76,8 @@ def create_vocab(dataset):
 
 # %%
 # creating datasets
-train_data = TasksData(data_dir='./data/Experiment-3', file='tasks_train_addprim_turn_left.txt')
-test_data = TasksData(data_dir='./data/Experiment-3', file='tasks_test_addprim_turn_left.txt')
+train_data = TasksData(data_dir='./data', file='tasks_train_simple.txt')
+test_data = TasksData(data_dir='./data', file='tasks_test_simple.txt')
 
 #creating source and target vocab
 src_train_data = [src for src, tgt in train_data]
@@ -168,7 +178,8 @@ class MultiHeadAttention(nn.Module):
         K = self.k_w(key).to(device).reshape(batch_size, key.shape[1], self.num_heads, self.head_dim)
         V = self.v_w(value).to(device).reshape(batch_size, value.shape[1], self.num_heads, self.head_dim)
 
-        d_k = self.q_w.weight.shape[1]
+        d_k = self.head_dim
+        # d_k = self.q_w.weight.shape[1]
 
 
         Q_permute = Q.permute(0, 2, 1, 3)
@@ -614,29 +625,3 @@ for epoch in range(num_epochs):
 
 
 # %%
-
-# %%
-# # general test case
-# # device = 'cuda' if torch.cuda.is_available() else 'cpu'
-# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-# multiheadAttention = Transformer(
-#     src_vocab_size=200,
-#     tgt_vocab_size=220,
-#     src_pad_idx=0,
-#     tgt_pad_idx=0,
-# ).to(device)
-
-# # source input: batch size 4, sequence length of 75
-# src_in = torch.randint(0, 200, (4, 75)).to(device)
-
-# # target input: batch size 4, sequence length of 80
-# tgt_in = torch.randint(0, 220, (4, 80)).to(device)
-
-# # expected output shape of the model
-# expected_out_shape = torch.Size([4, 80, 220])
-
-# with torch.no_grad():
-#     out = multiheadAttention(src_in, tgt_in)
-
-# assert out.shape == expected_out_shape, f"wrong output shape, expected: {expected_out_shape}"
