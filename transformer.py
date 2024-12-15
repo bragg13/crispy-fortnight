@@ -259,8 +259,8 @@ class TransformerBlock(nn.Module):
     # def forward(self, query, key, value, mask):
     def forward(self, query, key, value, mask):
         x = query
-        with torch.no_grad():
-            query, key, value, output = self.multiheadAttention(query, key, value, mask)
+        # with torch.no_grad():
+        query, key, value, output = self.multiheadAttention(query, key, value, mask)
 
         # Add X_in to output
         pre_norm_1 = self.dropout(x + output)
